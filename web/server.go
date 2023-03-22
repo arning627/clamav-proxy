@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	clamd "github.com/Arning627/clamav-proxy/internal"
+	"github.com/arning627/clamav-proxy/config"
+	clamd "github.com/arning627/clamav-proxy/internal"
 )
 
 func Ping(response http.ResponseWriter, request *http.Request) {
-
-	client := clamd.NewClient("localhost", 3310)
+	client := clamd.NewClient(config.InitializeConfig.Clamav.Host, config.InitializeConfig.Clamav.Port)
 	res, e := client.Ping()
 	if e != nil {
 		fmt.Fprintln(response, e.Error())

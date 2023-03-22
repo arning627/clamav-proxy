@@ -4,26 +4,32 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 )
 
 type clamd struct {
 	host string
-	port uint
+	port string
 	// _timeout int
 }
 
-func NewClient(host string, port uint) *clamd {
-	if port < 0 || port > 65535 {
+func NewClient(host string, port string) *clamd {
+	if p, e := strconv.ParseUint(port, 0, 0); e == nil {
+		if p < 0 || p > 65535 {
+			panic("Port exceeds limit")
+		}
+	} else {
 		panic("Port exceeds limit")
 	}
+
 	clamd := clamd{host: host, port: port}
 	return &clamd
 }
 
 // clamd PING command
-func (this *clamd) Ping() (string, error) {
+func (c *clamd) Ping() (string, error) {
 	//ping
-	conn, netErr := this.tcpConnection()
+	conn, netErr := c.tcpConnection()
 	defer conn.Close()
 	if netErr != nil {
 		return "", netErr
@@ -35,9 +41,9 @@ func (this *clamd) Ping() (string, error) {
 	return "PONG", nil
 }
 
-func (this *clamd) SacnStream(r io.Reader) (bool, error) {
+func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 	// scan
-	conn, netErr := this.tcpConnection()
+	conn, netErr := c.tcpConnection()
 	defer conn.Close()
 	if netErr != nil {
 		return false, netErr
@@ -57,6 +63,6 @@ func (this *clamd) SacnStream(r io.Reader) (bool, error) {
 	return false, nil
 }
 
-func (this *clamd) tcpConnection() (net.Conn, error) {
-	return net.Dial("tcp", fmt.Sprint(this.host, ":", this.port))
+func (c *clamd) tcpConnection() (net.Conn, error) {
+	return net.Dial("tcp", fmt.Sprint(c.host, ":", c.port))
 }

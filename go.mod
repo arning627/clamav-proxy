@@ -1,4 +1,4 @@
-module github.com/Arning627/clamav-proxy
+module github.com/arning627/clamav-proxy
 
 go 1.20
 
