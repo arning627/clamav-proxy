@@ -12,7 +12,7 @@ type clamd struct {
 	// _timeout int
 }
 
-func NewClient(host string, port uint, timeout int) *clamd {
+func NewClient(host string, port uint) *clamd {
 	if port < 0 || port > 65535 {
 		panic("Port exceeds limit")
 	}
@@ -32,7 +32,7 @@ func (this *clamd) Ping() (string, error) {
 	if writeErr != nil {
 		return "", writeErr
 	}
-	return "PANG", nil
+	return "PONG", nil
 }
 
 func (this *clamd) SacnStream(r io.Reader) (bool, error) {
