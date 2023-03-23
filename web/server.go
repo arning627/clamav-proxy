@@ -34,3 +34,11 @@ func Scan(response http.ResponseWriter, request *http.Request) {
 	client.SacnStream(file)
 
 }
+
+func Execute(response http.ResponseWriter, request *http.Request) {
+	client := clamd.NewClient(config.InitializeConfig.Clamav.Host, config.InitializeConfig.Clamav.Port)
+	query := request.URL.Query()
+	cmd, _ := query["cmd"]
+	client.Execute(cmd[0])
+	response.Write([]byte("ok..."))
+}

@@ -92,6 +92,32 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 	return false, nil
 }
 
+func (c *clamd) Execute(command string) {
+	conn, netErr := c.tcpConnection()
+	defer conn.Close()
+	if netErr != nil {
+		log.Fatalln(netErr)
+	}
+	_, writeErr := conn.Write([]byte(command))
+	if writeErr != nil {
+		log.Fatalln(writeErr)
+	}
+
+	reader := bufio.NewReader(conn)
+
+	for {
+		line, e := reader.ReadString('\n')
+		log.Println("line====", line)
+		if e == io.EOF {
+			break
+		}
+		if e == nil {
+			break
+		}
+	}
+
+}
+
 func (c *clamd) tcpConnection() (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprint(c.host, ":", c.port))
 }
