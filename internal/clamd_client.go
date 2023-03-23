@@ -1,8 +1,10 @@
 package clamd
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"strconv"
 )
@@ -38,6 +40,20 @@ func (c *clamd) Ping() (string, error) {
 	if writeErr != nil {
 		return "", writeErr
 	}
+
+	reader := bufio.NewReader(conn)
+
+	for {
+		line, e := reader.ReadString('\n')
+		log.Println("line====", line)
+		if e == io.EOF {
+			break
+		}
+		if e == nil {
+			break
+		}
+	}
+
 	return "PONG", nil
 }
 
@@ -56,6 +72,19 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 			conn.Write(buffer)
 		}
 		if readErr != nil {
+			break
+		}
+	}
+
+	reader := bufio.NewReader(conn)
+
+	for {
+		line, e := reader.ReadString('\n')
+		log.Println("line====", line)
+		if e == io.EOF {
+			break
+		}
+		if e == nil {
 			break
 		}
 	}

@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/arning627/clamav-proxy/config"
@@ -16,4 +17,20 @@ func Ping(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	fmt.Fprintln(response, res)
+}
+
+func Scan(response http.ResponseWriter, request *http.Request) {
+
+	client := clamd.NewClient(config.InitializeConfig.Clamav.Host, config.InitializeConfig.Clamav.Port)
+
+	request.ParseForm()
+
+	file, _, e := request.FormFile("file")
+
+	if e != nil {
+		log.Fatalln(e)
+	}
+
+	client.SacnStream(file)
+
 }
