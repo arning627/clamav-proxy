@@ -70,7 +70,7 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 		buffer := make([]byte, 2048)
 		length, readErr := r.Read(buffer)
 		if length > 0 {
-			conn.Write(buffer)
+			conn.Write(buffer[:length])
 		}
 		if readErr != nil {
 			break
