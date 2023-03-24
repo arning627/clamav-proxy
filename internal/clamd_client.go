@@ -64,6 +64,7 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 	if netErr != nil {
 		return false, netErr
 	}
+	conn.Write([]byte("nINSTREAM\n"))
 	for {
 		//TODO
 		buffer := make([]byte, 2048)
@@ -75,6 +76,7 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 			break
 		}
 	}
+	conn.Write([]byte{0, 0, 0, 0})
 
 	reader := bufio.NewReader(conn)
 
