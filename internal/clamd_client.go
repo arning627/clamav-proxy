@@ -66,31 +66,35 @@ func (c *clamd) SacnStream(r io.Reader) (bool, error) {
 	}
 	conn.Write([]byte("nINSTREAM\n"))
 	for {
-		//TODO
 		buffer := make([]byte, 2048)
 		length, readErr := r.Read(buffer)
 		if length > 0 {
-			conn.Write(buffer[:length])
+			send(buffer, conn)
 		}
 		if readErr != nil {
+			log.Println(readErr)
 			break
 		}
 	}
-	conn.Write([]byte{0, 0, 0, 0})
+	log.Println("write end 0,0,0,0")
+	_, e := conn.Write([]byte{0, 0, 0, 0})
+	if e != nil {
+		log.Println(e)
+	}
 
-	reader := bufio.NewReader(conn)
-
+	responseReader := bufio.NewReader(conn)
+	log.Println("read response")
 	for {
-		line, e := reader.ReadString('\n')
+		log.Println("reading response...")
+		line, e := responseReader.ReadString('\n')
 		log.Println("line====", line)
 		if e == io.EOF {
 			break
 		}
-		if e == nil {
+		if e != nil {
 			break
 		}
 	}
-	//TODO get response
 	return false, nil
 }
 
@@ -113,7 +117,7 @@ func (c *clamd) Execute(command string) {
 		if e == io.EOF {
 			break
 		}
-		if e == nil {
+		if e != nil {
 			break
 		}
 	}
@@ -122,4 +126,27 @@ func (c *clamd) Execute(command string) {
 
 func (c *clamd) tcpConnection() (net.Conn, error) {
 	return net.Dial("tcp", fmt.Sprint(c.host, ":", c.port))
+}
+
+// https://github.com/dutchcoders/go-clamd/blob/master/conn.go 直接写入会抛出 INSTREAM size limit exceeded. ERROR
+// 使用这个文件中的方法可以正常检测 具体还不清楚为何要这样写
+func send(data []byte, conn net.Conn) error {
+	var buf [4]byte
+	lenData := len(data)
+	buf[0] = byte(lenData >> 24)
+	buf[1] = byte(lenData >> 16)
+	buf[2] = byte(lenData >> 8)
+	buf[3] = byte(lenData >> 0)
+
+	a := buf
+
+	b := make([]byte, len(a))
+	for i := range a {
+		b[i] = a[i]
+	}
+
+	conn.Write(b)
+
+	_, err := conn.Write(data)
+	return err
 }
